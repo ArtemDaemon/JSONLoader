@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"os"
+
+	_ "modernc.org/sqlite"
 )
 
 type Item struct {
@@ -61,4 +64,55 @@ func main() {
 	}
 
 	log.Println("JSON успешно распарсен.")
+
+	db, err := sql.Open("sqlite", "./data.db")
+	if err != nil {
+		log.Fatal("Ошибка открытия файла базы данных:", err)
+	}
+	defer db.Close()
+
+	log.Println("Соединение с базой данных установлено.")
+
+	createTable := `
+	CREATE TABLE IF NOT EXISTS items (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		indicator_id TEXT,
+		indicator_value TEXT,
+		country_id TEXT,
+		country_value TEXT,
+		country_iso3_code TEXT,
+		date TEXT,
+		value INTEGER,
+		unit TEXT,
+		obs_status TEXT,
+		decimal INTEGER
+	)
+	`
+
+	if _, err := db.Exec(createTable); err != nil {
+		log.Fatal("Ошибка создания таблицы:", err)
+	}
+
+	log.Println("Таблица для хранения данных создана.")
+
+	insertStmt := `
+	INSERT OR REPLACE INTO items (indicator_id, indicator_value, country_id, country_value, country_iso3_code, date, value, unit, obs_status, decimal)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	for _, item := range items {
+		_, err := db.Exec(insertStmt,
+			item.Indicator.Id, item.Indicator.Value,
+			item.Country.Id, item.Country.Value,
+			item.CountryISO3Code, item.Date,
+			item.Value, item.Unit,
+			item.ObsStatus, item.Decimal,
+		)
+		if err != nil {
+			log.Fatal("Ошибка вставки объекта в базу данных:", err)
+		}
+	}
+
+	log.Printf("Число сохраненных записей: %d\n", len(items))
+	log.Println("Программа завершает работу.")
 }
