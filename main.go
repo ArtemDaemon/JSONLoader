@@ -85,7 +85,8 @@ func main() {
 		value INTEGER,
 		unit TEXT,
 		obs_status TEXT,
-		decimal INTEGER
+		decimal INTEGER,
+		created_at TEXT DEFAULT (DATETIME('now'))
 	)
 	`
 
