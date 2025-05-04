@@ -75,13 +75,12 @@ func main() {
 
 	createTable := `
 	CREATE TABLE IF NOT EXISTS items (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		indicator_id TEXT,
 		indicator_value TEXT,
 		country_id TEXT,
 		country_value TEXT,
 		country_iso3_code TEXT,
-		date TEXT,
+		date TEXT PRIMARY KEY NOT NULL UNIQUE,
 		value INTEGER,
 		unit TEXT,
 		obs_status TEXT,
